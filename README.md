@@ -67,7 +67,7 @@ At given point we haven't started to optimize, we needed to get code right and o
   - don’t use speculation when you writing output to s3, hdfs(?)
 
 9. S3a vs S3n
-  - move to s3a asap, but to work properly you should use
+  - move to s3a asap, but to work properly you should
   - upgrade to hadoop 2.7+
   - hdfs is the best :)
 
@@ -81,7 +81,7 @@ At given point we haven't started to optimize, we needed to get code right and o
   - currently we assinge customers into 2 groups and run our pipeline with different settings for each group
 
 12. Flow/Jobs management tool
-  - Tried Spotify's Luigi - not good for spark in multitenant environment - every job is submitted as new spark context - big overhead
+  - Tried Spotify's Luigi - not good for spark in multitenant environment - every job is submitted as a new spark context - big overhead
   - internally we implemented brother of Luigi - Mario
   - You can try JobServer too
   - NIH, enough time spent on Luigi
