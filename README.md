@@ -68,7 +68,7 @@ At given point we haven't started to optimize, we needed to get code right and o
 
 9. S3a vs S3n
   - move to s3a asap, but to work properly you should use
-  - hadoop 2.7+
+  - upgrade to hadoop 2.7+
   - hdfs is the best :)
 
 10. StackOverflowException and long transformation chains - sometimes you'll get this error and won't understand what's wrong. The problem is that your transformation chain is too long to be serialized, so 
@@ -77,7 +77,7 @@ At given point we haven't started to optimize, we needed to get code right and o
   - our advice - rethink your approach - reduce depth(chain to tree, combine several iterative steps into one)
 
 11. Job submission pools - probably will be relevant only in multitenant environments, when you have different sizes of customers
-  - small tenants with small data - utilize all cluster cores
+  - small tenants with small data - pool will help you to utilize all cluster cores(e.g. I have 32 cores and there are many small customers with data of 4 partitions only, so to fully utilize my cluster I'll need thread pool of size 8, that will use same spark context and will cause up to 8 jobs to be executed in parallel)
   - currently we assinge customers into 2 groups and run our pipeline with different settings for each group
 
 12. Flow/Jobs management tool
