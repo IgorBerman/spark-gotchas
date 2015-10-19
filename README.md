@@ -78,7 +78,7 @@ At given point we haven't started to optimize, we needed to get code right and o
 
 11. Job submission pools - probably will be relevant only in multitenant environments, when you have different sizes of customers
   - small tenants with small data - pool will help you to utilize all cluster cores(e.g. I have 32 cores and there are many small customers with data of 4 partitions only, so to fully utilize my cluster I'll need thread pool of size 8, that will use same spark context and will cause up to 8 jobs to be executed in parallel)
-  - currently we assinge customers into 2 groups and run our pipeline with different settings for each group
+  - currently we assign customers into 2 groups and run our pipeline with different settings for each group
 
 12. Flow/Jobs management tool
   - Tried Spotify's Luigi - not good for spark in multitenant environment - every job is submitted as a new spark context - big overhead
