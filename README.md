@@ -44,7 +44,7 @@ At given point we haven't started to optimize, we needed to get code right and o
   - Memory pressure and how much memory is available for each core(~ total heap * shuffle or cache fraction / number of cores)
   - Use Spark ui metric: Shuffle spill memory/Shuffle spill disk - if you see it a lot either upgrade your hardware, or make each partition smaller, or increase shuffle fraction
   - ShuffleMemoryManager: Thread 61 waiting for at least 1/2N of shuffle memory pool to be free - same as above
-  - Our rule of thumb: 64 MB 
+  - Our rule of thumb: 64 MB - we created simple tool that computes number of partitions as function of total size of data and writes it as simple csv file(line per data type per tenant), so we run it once in a while to update number of partitions. Sometimes, when there is huge and unpredicted spike in data volume we experience performance problems.
 
 5. When to use persist():
   - spark 1.4.1+ has nice DAG visualisation - look for same transformation chains
