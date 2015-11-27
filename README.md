@@ -38,7 +38,7 @@ At given point we haven't started to optimize, we needed to get code right and o
 3. Partitioner - it's your best friend for performance
   - map,distinct…. - transformations that lose partitioner, so try to avoid them if you can - you can use mapPartitions, mapValues instead of map or reduceByKey instead of distinct etc.
   - newAPIHadoopFile - reading partitioned rdd from previous batch cycle loses partitioner. Our batch process reads data, aggregates it and saves it back to s3/hdfs. The volume is not few kb. When next day same process reads rdd that were stored with partitioner inside, it's not there anymore! Spark loses the partitioner information.
-  - [there is PR](https://github.com/apache/spark/pull/4449) that describes how to solve this problem. We might release our internal project in the future that implements standalone extention to spark core for it, in general everything in Imran's PR.
+  - [there is PR](https://github.com/apache/spark/pull/4449) that describes how to solve this problem. We might [release](https://github.com/IgorBerman/DySparkExtensionOS) our internal project in the future that implements standalone extention to spark core for it, in general everything in Imran's PR.
 
 4. Tuning number of partitions -  a most "voodoo" part, however you wont success using spark unless you'll understand how to tune this. There are few factors that you'll need to take into account:
   - Memory pressure and how much memory is available for each core(~ total heap * shuffle or cache fraction / number of cores)
