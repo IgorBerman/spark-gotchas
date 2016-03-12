@@ -69,7 +69,8 @@ At given point we haven't started to optimize, we needed to get code right and o
 9. S3a vs S3n
   - move to s3a asap, but to work properly you should
   - upgrade to hadoop 2.7+
-  - hdfs is the best :)
+  - hdfs is the best, but has limited scalability
+  - writing data to s3 is unlimitedly scalable, but has problem with file output commiter: when spark writes each part in parallel it first writes to _temporary directory/bucket and then on commit stage all parts are moved to the destination. While in hdfs "move" is implemented efficiently, in s3 "move" is copying each part 1-by-1(forget parallelism!) to the destination bucket. When your rdd has 256+ parts, this commiting stage will be considerable. Moreover in spark UI you'll see that job is already done, but next job is not starting. To solve this we are testing in production [direct output commiter for avro format](https://github.com/IgorBerman/directavro)(Pay attention to the limitation it imposes on your settings - you can't append data and you can't use speculation mode)
 
 10. StackOverflowException and long transformation chains - sometimes you'll get this error and won't understand what's wrong. The problem is that your transformation chain is too long to be serialized, so 
   - it usually happens when you have some sort of iterative transformations
