@@ -1,4 +1,4 @@
-# Using dynamic allocation on Mesos - Technical Report
+# Using Spark Dynamic Allocation on Mesos
 
 ## Environment
 1. Spark v2.2.0
@@ -6,21 +6,38 @@
 1. Number of cores: thouthands
 1. Number of mesos slaves: hundreds
 
+The the story starts from metrics. You need to have some metric system that will show you that you are underutilizing your available resources. 
+In Taboola, we are using Graphana and Metrictank and Kafka based pipeline to collect metrics. 
+We have long running services that once in a while upon some external trigger start to process new chunks of data. In between the resources are not used, but no other framework can use them due to static allocation. Below you can see that number of cores taken from Mesos cluster are constant:
+
+![Before dynamic allocation](./before.png)
+
+So our goal was two fold:
+1. Utilize better available resources
+1. Improve end-to-end processing time
+
+One of the ways to release unused resources in static cluster(we are running on-premise) is to start using advanced spark feature of dynamic allocation.
+
 ## [What is dynamic allocation?](https://spark.apache.org/docs/latest/job-scheduling.html#configuration-and-setup) 
 * Spark provides a mechanism to dynamically adjust the resources your application occupies based on the workload
 * Your application may give resources back to the cluster if they are no longer used and request them again later when there is demand
 * Particularly useful if multiple applications share resources in your Spark cluster
 
+Since we've seen clear idle times we it seemed like perfect usecase for dynamic allocation. I've started to read about this feature and it seems that there are not many reports available out there. This one tries to fill the missing parts. The documentation on spark site is pretty limited. Moreover there is no discussion how it should be done in Mesos cluster environment. [Spark user list](http://apache-spark-user-list.1001560.n3.nabble.com/) lacks this information as well.
+
+At basic level this is what happening: Spark driver monitors number of pending tasks. When there is no such, timeout timer starts to tick. If it expires the driver turns off executors on mesos slaves. The only problem with this approach is that killed executors produces some shuffle files that might be in need by other still-alive executors. To solve this issue, we need external shuffle service that will serve aforementioned shuffle files as a proxy of dead executor.
+
 ## Basic prerequisites
 1. External Shuffle Service 
    1. Must run on every spark node
-   1. Spark executor will connect to localhost:<shuffle-service-port>
-   1. Spark executor will register itself with shuffle blocks paths
+   1. Spark executor will connect to localhost:shuffle-service-port
+   1. Spark executor will register itself and every shuffle files it produces
    1. External shuffle service will serve them to other executors if the source executor is killed
    1. spark.shuffle.service.enabled = true
 1. Dynamic Allocation feature flag
    1. spark.dynamicAllocation.enabled = true
-   
+
+How to make sure external shuffle service is running on every mesos-slave node? Spark documentation mentions Marathon as a one way to achieve this(no more details).
    
 ## Mesos slaves reserve resources statically for "shuffle" role
 1. Using [static reservation](http://mesos.apache.org/documentation/latest/reservation/) for the role, e.g.
